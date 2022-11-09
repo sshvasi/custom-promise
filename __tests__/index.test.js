@@ -1,3 +1,4 @@
+import util from 'util';
 import CustomPromise from '../index.js';
 
 const resolveMessage = 'Resolved!';
@@ -8,12 +9,15 @@ test('is not Promise', () => {
 
 test('then()', async () => {
   const resolvedPromise = new CustomPromise((resolve) => {
-    resolve(resolveMessage);
+    setTimeout(() => resolve(resolveMessage), 100);
   });
+  expect(util.inspect(resolvedPromise).toLowerCase()).toContain('pending');
   const resolveString = await resolvedPromise
-    .then((message) => `Another ${message}`);
+    .then(async (message) => `Another ${message}`);
+  expect(util.inspect(resolvedPromise).toLowerCase()).not.toContain('pending');
   expect(resolveString).toEqual(`Another ${resolveMessage}`);
 
+  // eslint-disable-next-line jest/valid-expect-in-promise
   const resolveChainResult = await resolvedPromise
     .then((message) => `New another ${message}`)
     .then((message) => message.split(' '))
@@ -21,4 +25,3 @@ test('then()', async () => {
     .then((array) => array.join(''));
   expect(resolveChainResult).toEqual(`New another ${resolveMessage}`.split(' ').reverse().join(''));
 });
-
